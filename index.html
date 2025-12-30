@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>প্রত্যয়নপত্র - বুজরুক বাগবাড় সরকারি প্রাথমিক বিদ্যালয়</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+
+        @page {
+            size: landscape;
+            margin: 0;
+        }
+
+        body { 
+            font-family: 'Hind Siliguri', sans-serif; 
+            margin: 0; padding: 0; background-color: #f0f2f5;
+        }
+        
+        .no-print { 
+            background: #1a2a6c; padding: 15px; text-align: center;
+            color: white; position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        select { padding: 8px; border-radius: 5px; font-family: 'Hind Siliguri'; margin-right: 10px; border: 2px solid #f39c12; }
+
+        .btn {
+            padding: 10px 25px; color: white; border: none; 
+            cursor: pointer; border-radius: 6px; font-family: 'Hind Siliguri'; 
+            font-weight: bold; margin: 0 5px; transition: 0.3s;
+        }
+        .btn-print { background: #27ae60; }
+        .btn-all { background: #e67e22; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* সার্টিফিকেট কন্টেইনার */
+        .cert-container {
+            width: 285mm; 
+            height: 195mm; 
+            background: white;
+            margin: 30px auto;
+            border: 15px double #b8860b; 
+            padding: 40px 70px;
+            box-sizing: border-box;
+            position: relative;
+            background-image: radial-gradient(#fffdfa, #ffffff);
+            page-break-after: always;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .watermark {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 320px;
+            opacity: 0.05; z-index: 0;
+        }
+
+        .content-wrapper { position: relative; z-index: 1; }
+
+        .header { 
+            display: flex; align-items: center; justify-content: space-between; 
+            margin-bottom: 12px; border-bottom: 3px double #b8860b; padding-bottom: 12px; 
+        }
+
+        .logo { width: 80px; height: auto; }
+        .school-info { text-align: center; flex: 1; }
+        .school-info h2 { margin: 2px 0; font-size: 32px; color: #c0392b; font-weight: 700; }
+        .school-info h4 { margin: 0; font-size: 19px; color: #1a2a6c; }
+        .school-info p { margin: 2px 0; font-size: 16px; font-weight: 600; color: #34495e; }
+
+        .meta { display: flex; justify-content: space-between; margin: 20px 0; font-size: 19px; font-weight: 600; }
+        
+        .cert-title { text-align: center; margin: 20px 0; }
+        .cert-title span { 
+            background: #1a2a6c; color: white; padding: 6px 55px; 
+            font-size: 28px; border-radius: 8px; font-weight: bold;
+        }
+
+        .main-content { 
+            font-size: 23px; line-height: 2.1; margin-top: 25px; 
+            text-align: justify; color: #2c3e50;
+        }
+
+        .fill { border-bottom: 2px dotted #444; display: inline-block; padding: 0 8px; font-weight: 700; color: #000; }
+
+        .footer { margin-top: 50px; display: flex; justify-content: flex-end; }
+        .sign-box { text-align: center; width: 280px; }
+        .line { border-top: 2.5px solid #1a2a6c; margin-bottom: 5px; }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; margin: 0; }
+            .cert-container { 
+                margin: 0 !important; 
+                border: 15px double #b8860b !important;
+                width: 100%;
+                height: 100vh;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <strong>একক শিক্ষার্থী:</strong>
+    <select id="studentSelect" onchange="updateCert()">
+        <option value="">নির্বাচন করুন</option>
+    </select>
+    <button class="btn btn-print" onclick="window.print()">প্রিন্ট করুন</button>
+    <button class="btn btn-all" onclick="generateAll()">সবগুলো একসাথে ভিজিবল ও PDF করুন</button>
+</div>
+
+<div id="main-display">
+    <div id="cert-area">
+        </div>
+</div>
+
+<script>
+    const students = [
+        {roll: 1, name: "নাহিদা খাতুন", mother: "মোছাঃ রেবেকা খাতুন", father: "নুর মোহাম্মদ", dob: "১৩-১০-২০১৫"},
+        {roll: 2, name: "মোছাঃ আনিকা খাতুন", mother: "মোছাঃ আয়শা খাতুন", father: "মোঃ আনিছুল হক", dob: "২৩-০৭-২০১৪"},
+        {roll: 3, name: "মোছাঃ সুমাইয়া আক্তার", mother: "মোছাঃ আজেকা বানু", father: "মোঃ মশিউর রহমান", dob: "২৩-০১-২০১৩"},
+        {roll: 4, name: "হীমেল রায়", mother: "নমিতা রানী", father: "রমেশ চন্দ্র রায়", dob: "৩০-০৬-২০১৪"},
+        {roll: 5, name: "শ্রীমতি তৃষ্ণা রায়", mother: "শ্রীমতি ছবি রানী রায়", father: "গনেশ চন্দ্র", dob: "০৯/০৬/২০১৪"},
+        {roll: 6, name: "শ্রী মঙ্গল চন্দ্র রায় টিটু", mother: "শ্রীমতি রুপালী রানী", father: "শ্রী অতুল চন্দ্র রায়", dob: "১৯-০১-২০১৪"},
+        {roll: 7, name: "দীপ্ত সরকার", mother: "নিপা রানী সরকার", father: "গৌতম চন্দ্র সরকার", dob: "১৮-১২-২০১৪"},
+        {roll: 9, name: "তমাল চন্দ্র রায়", mother: "কনিকা রানী রায়", father: "পশুরাম চন্দ্র রায়", dob: "১৩-০৫-২০১৪"},
+        {roll: 10, name: "নিরব রায়", mother: "পারুল রানী রায়", father: "ভোলানাথ রায়", dob: "২৮-০৯-২০১৪"},
+        {roll: 11, name: "মোঃ আহসান হাবীব", mother: "মোছাঃ দুলালী খাতুন", father: "মোঃ শহিদুল ইসলাম", dob: "০৩/০২/২০১৫"},
+        {roll: 12, name: "মোঃ রাসেল বাবু", mother: "মোছাঃ রোকসানা বেগম", father: "মোঃ লিটন বাবু", dob: "১৫-০৪-২০১৩"},
+        {roll: 13, name: "মোঃ ফরহাদ", mother: "ফরিদা বেগম", father: "আঃ জব্বার", dob: "২৮-০৪-২০১২"},
+        {roll: 15, name: "মনিসা দেবী", mother: "স্মৃতি রানী", father: "বাবলু রায়", dob: "১৩-১০-২০১৪"},
+        {roll: 16, name: "ইমন চন্দ্র", mother: "রত্না রানী", father: "ভোপেন চন্দ্র সরকার", dob: "০৭-১১-২০১৫"},
+        {roll: 18, name: "জয়ন্তী", mother: "বীনা রায়", father: "বাবলু চন্দ্র", dob: "১০/০৮/২০১৪"},
+        {roll: 19, name: "মোছাঃ মালিহা আক্তার মনিয়াত", mother: "মোছাঃ তানজিনা বেগম", father: "মোঃ মাসুদ রানা", dob: "০৩/০৪/২০১৫"},
+        {roll: 20, name: "রিভা রানী", mother: "শ্রীমতি তৃষ্ণা রানী সরকার", father: "চন্দন চন্দ্র", dob: "০৭/১১/২০১৪"},
+        {roll: 21, name: "মোঃ তহিদুল ইসলাম", mother: "মোছাঃ মোকরেমা খাতুন", father: "মোঃ মাহামুদ আলম", dob: "০২/০৪/২০১৩"},
+        {roll: 22, name: "অর্পন চন্দ্র রায়", mother: "শ্রীমতি অনিতা রানী", father: "শ্রী জীবন", dob: "১৮-০৮-২০১৩"}
+    ];
+
+    function toBn(n) { return String(n).replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
+
+    const today = new Date();
+    const dateStr = toBn(`${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`);
+
+    function createCertHTML(s) {
+        return `
+        <div class="cert-container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg" class="watermark">
+            <div class="content-wrapper">
+                <div class="header">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg" class="logo">
+                    <div class="school-info">
+                        <h4>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</h4>
+                        <h4>প্রাথমিক শিক্ষা অধিদপ্তর</h4>
+                        <h2>বুজরুক বাগবাড় সরকারি প্রাথমিক বিদ্যালয়</h2>
+                        <p>বদরগঞ্জ, রংপুর। স্থাপিত: ১৯৯২ ইং</p>
+                    </div>
+                    <img src="https://dpe.portal.gov.bd/sites/default/files/files/dpe.portal.gov.bd/npfblock//DPE%20Logo.jpg" class="logo">
+                </div>
+                <div class="meta">
+                    <div>সিরিয়াল নং: <span class="fill" style="min-width: 100px;">${toBn('২০২৫-'+s.roll)}</span></div>
+                    <div>তারিখ: <span class="fill" style="min-width: 120px;">${dateStr}</span></div>
+                </div>
+                <div class="cert-title"><span>প্রত্যয়নপত্র</span></div>
+                <div class="main-content">
+                    এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <span class="fill" style="min-width: 380px;">${s.name}</span>, 
+                    পিতা: <span class="fill" style="min-width: 250px;">${s.father}</span>, 
+                    মাতা: <span class="fill" style="min-width: 250px;">${s.mother}</span>। 
+                    তাহার জন্ম তারিখ: <span class="fill" style="min-width: 150px;">${toBn(s.dob)}</span>, 
+                    রোল নং: <span class="fill" style="min-width: 60px;">${toBn(s.roll)}</span>। 
+                    সে এই বিদ্যালয়ে <span class="fill">২০২৫</span> শিক্ষাবর্ষে <span class="fill">৫ম শ্রেণি</span>তে নিয়মিত অধ্যয়ন করেছে। তাহার স্বভাব ও চরিত্র প্রশংসনীয়। <br>
+                    আমি তাহার সর্বাঙ্গীন সাফল্য ও উজ্জ্বল ভবিষ্যৎ কামনা করি।
+                </div>
+                <div class="footer">
+                    <div class="sign-box">
+                        <div class="line"></div>
+                        <div class="sign-text" style="font-weight: 600; font-size: 17px; color: #1a2a6c;">
+                            <strong>(প্রধান শিক্ষক)</strong><br>
+                            বুজরুক বাগবাড় সরকারি প্রাথমিক বিদ্যালয়<br>
+                            বদরগঞ্জ, রংপুর।
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // ড্রপডাউন মেনু লোড
+    const select = document.getElementById('studentSelect');
+    students.forEach(s => {
+        let opt = document.createElement('option');
+        opt.value = s.roll;
+        opt.innerHTML = `রোল: ${toBn(s.roll)} - ${s.name}`;
+        select.appendChild(opt);
+    });
+
+    // একক শিক্ষার্থী দেখানো
+    function updateCert() {
+        const rollVal = document.getElementById('studentSelect').value;
+        const s = students.find(item => item.roll == rollVal);
+        if (s) {
+            document.getElementById('cert-area').innerHTML = createCertHTML(s);
+        }
+    }
+
+    // সবগুলো একসাথে ভিজিবল করা ও প্রিন্ট দেওয়া
+    function generateAll() {
+        let output = "";
+        students.forEach(s => { output += createCertHTML(s); });
+        document.getElementById('cert-area').innerHTML = output;
+        
+        // কিছুটা সময় বিরতি দিয়ে প্রিন্ট উইন্ডো ওপেন করা যাতে ব্রাউজার লোড হতে পারে
+        setTimeout(() => { window.print(); }, 800);
+    }
+
+    // শুরুতে প্রথম ছাত্রকে দেখানো
+    window.onload = () => {
+        document.getElementById('cert-area').innerHTML = createCertHTML(students[0]);
+    };
+</script>
+</body>
+</html>
