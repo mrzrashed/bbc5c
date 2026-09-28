@@ -32,6 +32,7 @@
         }
         .btn-print { background: #27ae60; }
         .btn-all { background: #e67e22; }
+        .btn-reload { background: #2980b9; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
         /* সার্টিফিকেট কন্টেইনার */
@@ -87,6 +88,10 @@
         .sign-box { text-align: center; width: 280px; }
         .line { border-top: 2.5px solid #1a2a6c; margin-bottom: 5px; }
 
+        .loading-text {
+            text-align: center; font-size: 24px; font-weight: bold; margin-top: 100px; color: #1a2a6c;
+        }
+
         @media print {
             .no-print { display: none; }
             body { background: white; margin: 0; }
@@ -105,23 +110,29 @@
 <div class="no-print">
     <strong>একক শিক্ষার্থী:</strong>
     <select id="studentSelect" onchange="updateCert()">
-        <option value="">নির্বাচন করুন</option>
+        <option value="">লোডিং হচ্ছে...</option>
     </select>
+    <button class="btn btn-reload" onclick="loadSheetData()">ডাটা রিফ্রেশ করুন</button>
     <button class="btn btn-print" onclick="window.print()">প্রিন্ট করুন</button>
     <button class="btn btn-all" onclick="generateAll()">সবগুলো একসাথে ভিজিবল ও PDF করুন</button>
 </div>
 
 <div id="main-display">
     <div id="cert-area">
-        </div>
+        <div class="loading-text">গুগল শিট থেকে ডাটা লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>
+    </div>
 </div>
 
 <script>
-    const students = [
-        {roll: , name: "", mother: "ম", father: "", dob: ""},
-    ];
+    // আপনার Google Apps Script Web App URL-টি এখানে বসান
+    const GOOGLE_SHEET_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAjcpQX_kc3jCfz2CWLDvVbMGkjVunRg0z6YDtB39UqfpGyeUYGebzVm-Ru-ThPT3smw/exec";
 
-    function toBn(n) { return String(n).replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); }
+    let students = [];
+
+    function toBn(n) { 
+        if(!n) return '';
+        return String(n).replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); 
+    }
 
     const today = new Date();
     const dateStr = toBn(`${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`);
@@ -142,8 +153,8 @@
                     <img src="https://dpe.portal.gov.bd/sites/default/files/files/dpe.portal.gov.bd/npfblock//DPE%20Logo.jpg" class="logo">
                 </div>
                 <div class="meta">
-                    <div>সিরিয়াল নং: <span class="fill" style="min-width: 100px;">${toBn('২০২৬-')}</span></div>
-                    <div>তারিখ: <span class="fill" style="min-width: 120px;"> </span></div>
+                    <div>সিরিয়াল নং: <span class="fill" style="min-width: 100px;">${toBn(s.sessionYear || '২০২৫')+'-'+toBn(s.roll)}</span></div>
+                    <div>তারিখ: <span class="fill" style="min-width: 120px;">${dateStr}</span></div>
                 </div>
                 <div class="cert-title"><span>প্রত্যয়নপত্র</span></div>
                 <div class="main-content">
@@ -152,7 +163,7 @@
                     মাতা: <span class="fill" style="min-width: 250px;">${s.mother}</span>। 
                     তাহার জন্ম তারিখ: <span class="fill" style="min-width: 150px;">${toBn(s.dob)}</span>, 
                     রোল নং: <span class="fill" style="min-width: 60px;">${toBn(s.roll)}</span>। 
-                    সে এই বিদ্যালয়ে <span class="fill">২০২৬</span> শিক্ষাবর্ষে <span class="fill">৫ম শ্রেণি</span>তে নিয়মিত অধ্যয়ন করেছে। তাহার স্বভাব ও চরিত্র প্রশংসনীয়। <br>
+                    সে এই বিদ্যালয়ে <span class="fill">${toBn(s.sessionYear || '২০২৫')}</span> শিক্ষাবর্ষে <span class="fill">${s.studentClass || '৫ম শ্রেণি'}</span>তে নিয়মিত অধ্যয়ন করেছে। তাহার স্বভাব ও চরিত্র প্রশংসনীয়। <br>
                     আমি তাহার সর্বাঙ্গীন সাফল্য ও উজ্জ্বল ভবিষ্যৎ কামনা করি।
                 </div>
                 <div class="footer">
@@ -169,16 +180,33 @@
         </div>`;
     }
 
-    // ড্রপডাউন মেনু লোড
-    const select = document.getElementById('studentSelect');
-    students.forEach(s => {
-        let opt = document.createElement('option');
-        opt.value = s.roll;
-        opt.innerHTML = `রোল: ${toBn(s.roll)} - ${s.name}`;
-        select.appendChild(opt);
-    });
+    async function loadSheetData() {
+        document.getElementById('cert-area').innerHTML = '<div class="loading-text">গুগল শিট থেকে ডাটা লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</div>';
+        try {
+            const response = await fetch(GOOGLE_SHEET_SCRIPT_URL);
+            students = await response.json();
+            
+            const select = document.getElementById('studentSelect');
+            select.innerHTML = '';
 
-    // একক শিক্ষার্থী দেখানো
+            students.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.roll;
+                opt.innerHTML = `রোল: ${toBn(s.roll)} - ${s.name}`;
+                select.appendChild(opt);
+            });
+
+            if (students.length > 0) {
+                document.getElementById('cert-area').innerHTML = createCertHTML(students[0]);
+            } else {
+                document.getElementById('cert-area').innerHTML = '<div class="loading-text">গুগল শিটে কোনো শিক্ষার্থী পাওয়া যায়নি।</div>';
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('cert-area').innerHTML = '<div class="loading-text" style="color: red;">ডাটা লোড করতে ব্যর্থ হয়েছে। URL ঠিক আছে কিনা পরীক্ষা করুন।</div>';
+        }
+    }
+
     function updateCert() {
         const rollVal = document.getElementById('studentSelect').value;
         const s = students.find(item => item.roll == rollVal);
@@ -187,20 +215,15 @@
         }
     }
 
-    // সবগুলো একসাথে ভিজিবল করা ও প্রিন্ট দেওয়া
     function generateAll() {
+        if(students.length === 0) return;
         let output = "";
         students.forEach(s => { output += createCertHTML(s); });
         document.getElementById('cert-area').innerHTML = output;
-        
-        // কিছুটা সময় বিরতি দিয়ে প্রিন্ট উইন্ডো ওপেন করা যাতে ব্রাউজার লোড হতে পারে
         setTimeout(() => { window.print(); }, 800);
     }
 
-    // শুরুতে প্রথম ছাত্রকে দেখানো
-    window.onload = () => {
-        document.getElementById('cert-area').innerHTML = createCertHTML(students[0]);
-    };
+    window.onload = loadSheetData;
 </script>
 </body>
 </html>
