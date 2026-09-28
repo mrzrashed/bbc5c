@@ -161,7 +161,7 @@
                     এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <span class="fill" style="min-width: 380px;">${s.name}</span>, 
                     পিতা: <span class="fill" style="min-width: 250px;">${s.father}</span>, 
                     মাতা: <span class="fill" style="min-width: 250px;">${s.mother}</span>। 
-                    তাহার জন্ম তারিখ: <span class="fill" style="min-width: 150px;">${toBn(s.dob)}</span>, 
+                    তাহার জন্ম তারিখ: <span class="fill" style="min-width: 150px;">${toBn(s.dob ? new Date(s.dob).toLocaleDateString('en-GB').replace(/\//g, '-') : '')}</span>, 
                     রোল নং: <span class="fill" style="min-width: 60px;">${toBn(s.roll)}</span>। 
                     সে এই বিদ্যালয়ে <span class="fill">${toBn(s.sessionYear || '২০২৫')}</span> শিক্ষাবর্ষে <span class="fill">${s.studentClass || '৫ম শ্রেণি'}</span>তে নিয়মিত অধ্যয়ন করেছে। তাহার স্বভাব ও চরিত্র প্রশংসনীয়। <br>
                     আমি তাহার সর্বাঙ্গীন সাফল্য ও উজ্জ্বল ভবিষ্যৎ কামনা করি।
