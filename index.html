@@ -134,7 +134,7 @@
         return String(n).replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]); 
     }
 
-    const today = new Date();
+    const today = '১২-১২-২০২৬';
     const dateStr = toBn(`${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`);
 
     function createCertHTML(s) {
